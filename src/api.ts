@@ -1,9 +1,7 @@
 import {
     addHours,
     endOfHour,
-    fromUnixTime,
     getDayOfYear,
-    getTime,
     getYear,
     isBefore,
     isEqual,
@@ -18,10 +16,12 @@ import {
     FileToUrlArgs, getHourBlockForDate,
 } from './ftpUtil';
 import {
-    createDirectoryIfNotExists
+    createDirectoryIfNotExists,
+    extractFilesIn,
+    mergeFiles,
 } from './fsUtil';
 
-const TEMPORARY_DOWNLOAD_FILE = './temp_data_dir';
+const TEMPORARY_DATA_FILE = './temp_data_dir';
 const FTP_DOMAIN = 'geodesy.noaa.gov';
 const FTP_BASE_PATH = '/corsdata/rinex';
 
@@ -44,11 +44,14 @@ export const downloadAndMergeRinexFiles = async (options: DownloadAndMergeArg) =
         filesToDownload.push(createUrlForFile(pathArgs));
         currentDate = addHours(currentDate, 1);
     }
-    await createDirectoryIfNotExists(TEMPORARY_DOWNLOAD_FILE);
+    await createDirectoryIfNotExists(TEMPORARY_DATA_FILE);
     await downloadFiles({
         domain: FTP_DOMAIN,
         filePaths: filesToDownload,
-        outputDir: TEMPORARY_DOWNLOAD_FILE,
+        outputDir: TEMPORARY_DATA_FILE,
     });
+    await extractFilesIn(`${TEMPORARY_DATA_FILE}/*`);
+    await mergeFiles(TEMPORARY_DATA_FILE, 'output.21g');
 
+    // Should then delete files and directory TEMPORARY_DATA_FILE
 };
