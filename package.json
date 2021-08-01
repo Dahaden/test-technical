@@ -5,14 +5,23 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "ts-node src/commandLine.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^16.4.9",
+    "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "commander": "^8.1.0"
+    "basic-ftp": "^4.6.6",
+    "commander": "^8.1.0",
+    "date-fns": "^2.23.0",
+    "gps-time": "^1.0.8"
+  },
+  "bin": {
+    "grab_data": "./dist/commandLine.js"
   }
 }

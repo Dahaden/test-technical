@@ -1,4 +1,4 @@
-export interface DownloadArgs {
+export interface DownloadAndMergeArg {
     baseStationId: string,
     startTimestamp: string,
     endTimestamp: string,
