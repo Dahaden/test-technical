@@ -51,7 +51,12 @@ export const downloadAndMergeRinexFiles = async (options: DownloadAndMergeArg) =
         outputDir: TEMPORARY_DATA_FILE,
     });
     await extractFilesIn(`${TEMPORARY_DATA_FILE}/*`);
-    await mergeFiles(TEMPORARY_DATA_FILE, 'output.21g');
+    await mergeFiles({
+        sourceDir: TEMPORARY_DATA_FILE,
+        targetFile: 'output.21g',
+        startTime: startDate,
+        endTime: endDate,
+    });
 
     // Should then delete files and directory TEMPORARY_DATA_FILE
 };
