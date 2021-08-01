@@ -1,4 +1,16 @@
-import { getHours } from 'date-fns';
+import {
+    addHours,
+    getDayOfYear,
+    getHours,
+    getYear,
+    isBefore,
+    isEqual,
+    subMilliseconds,
+} from 'date-fns';
+import {
+    toDate,
+    getTimezoneOffset,
+} from 'date-fns-tz';
 import https from 'https';
 import fs from 'fs';
 
@@ -80,14 +92,13 @@ export interface FileToUrlArgs {
  * @param pathArgs typescript defined object with all args to make a valid path
  * @returns string of path to FTP file
  */
-export const createUrlForFile = (pathArgs: FileToUrlArgs) => {
-    const {
-        basePath,
-        year,
-        dayOfYear,
-        baseStationId,
-        hourBlock,
-    } = pathArgs;
+export const createUrlForFile = ({
+    basePath,
+    year,
+    dayOfYear,
+    baseStationId,
+    hourBlock,
+}: FileToUrlArgs) => {
     return `${basePath}/${year}/${dayOfYear}/${baseStationId}/` +
     `${baseStationId}${dayOfYear}${hourBlock}.${year.toString().slice(-2)}o.gz`;
 };
@@ -99,7 +110,43 @@ export const createUrlForFile = (pathArgs: FileToUrlArgs) => {
  * @param date 
  */
 export const getHourBlockForDate = (date: Date): string => {
-    const hour = getHours(date);
+    const hour = date.getHours();
     // Converts hour to letter of alphabet using base 36 (all letters + single digit numnbers)
-    return (hour + 9).toString(36);
+    return (hour + 10).toString(36);
+};
+
+export interface CreateFilePathsArgs {
+    basePath: string,
+    startDate: Date,
+    endDate: Date,
+    baseStationId: string,
+};
+
+export const createFilePathsFor = ({
+    basePath,
+    startDate,
+    endDate,
+    baseStationId,
+}: CreateFilePathsArgs): string[] => {
+    let currentDate = startDate;
+    const filesToDownload: string[] = [];
+    console.log('Start and end date', startDate, endDate);
+    while (isBefore(currentDate, endDate) || isEqual(currentDate, endDate)) {
+        const pathArgs: FileToUrlArgs = {
+            basePath,
+            baseStationId: baseStationId,
+            year: getYear(currentDate),
+            dayOfYear: getDayOfYear(currentDate),
+            hourBlock: getHourBlockForDate(currentDate),
+        };
+        filesToDownload.push(createUrlForFile(pathArgs));
+        currentDate = addHours(currentDate, 1);
+    }
+
+    return filesToDownload;
+}
+
+export const localTimeToUTC = (currentTime: string): Date => {
+    // TODO learn date-fns-tz properly so it can do this
+    return subMilliseconds(toDate(currentTime), Math.abs(getTimezoneOffset('Australia/Sydney')));
 };
